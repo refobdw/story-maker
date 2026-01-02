@@ -19,9 +19,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "No data found in sheet for characters" }, { status: 404 });
         }
 
-        // 2. Random selection
-        const randomIndex = Math.floor(Math.random() * rows.length);
-        const [strength, weakness] = rows[randomIndex] || ["Unknown", "Unknown"];
+        // 2. Random selection (Independent)
+        const strengths = rows.map(row => row[0]).filter(val => val && val.trim() !== "");
+        const weaknesses = rows.map(row => row[1]).filter(val => val && val.trim() !== "");
+
+        if (strengths.length === 0 || weaknesses.length === 0) {
+            return NextResponse.json({ error: "Insufficient data in sheet for characters" }, { status: 404 });
+        }
+
+        const strength = strengths[Math.floor(Math.random() * strengths.length)];
+        const weakness = weaknesses[Math.floor(Math.random() * weaknesses.length)];
 
         // 3. Generate with Gemini
         const prompt = `Create a complex, interesting character profile based on the following attributes:\nStrength: ${strength}\nWeakness/Flaw: ${weakness}\n\nProvide the profile in Korean. Include Name, Age, Occupation, Personality Description, and Background Story.`;
